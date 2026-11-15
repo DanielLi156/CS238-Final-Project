@@ -1,0 +1,64 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=0.95in,top=0.55in,bottom=0.7in]{geometry}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage[compact]{titlesec}
+
+% Tighter spacing
+\titlespacing*{\section}{0pt}{1ex}{0.4ex}
+\titlespacing*{\paragraph}{0pt}{0.4ex}{1em}
+\setlength{\parskip}{0pt}
+\setlength{\textfloatsep}{6pt}
+\setlength{\intextsep}{6pt}
+\makeatletter
+\renewcommand{\@maketitle}{%
+  \newpage\null\vskip -3.5em%
+  \begin{center}%
+    {\Large \@title \par}\vskip 0.3em%
+    {\normalsize \@author\quad$\cdot$\quad\@date}%
+  \end{center}\par\vskip 0.2em}
+\makeatother
+
+\title{CSL Lineup Generator: CS 238 Project Status Update}
+\author{Daniel Li and Ethan Harrington}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Problem}
+
+The goal of this project is still to create the best possible lineup for the new College Swimming League (CSL). In CSL, each of four teams brings 28 swimmers (14 men and 14 women) to a scored meet of 30 events, 15 per gender. To keep this write-up brief, we omit the remaining scoring and meet details (such as jackpot points, event limits, etc.). We want study how to maximize Stanford's expected team points against known opponents. We formulate this as an MDP that builds the lineup one event at a time.
+
+\section{Progress So Far}
+
+\paragraph{Rules.} First, we created a Python file that encodes the CSL rules. So far, this file includes two functions: one that scores a race based on its results, and one that returns the jackpot threshold for each event.
+
+\paragraph{Data} Next we compiled the official results of all eight CSL meets into a dataset. We also compiled a more detailed dataset listing every recorded swim by the current Stanford men's roster from 2019 to 2026, including pre-college club meets.
+
+\paragraph{Simulator and Baseline} First, we decided to create a baseline model where our policy was just to act greedily and take the two fastest swimmers in each event while adhering to each individual's event limits. We represented a state as the current event and each swimmer's remaining available events, an action as the pair of swimmers entered, a transition as moving to the next event and subtracting 1 from each chosen swimmer's remaining events, a reward as the points Stanford scores in that event, and the terminal state as the end of the final event. Finally, we wrote a very elementary meet simulation function that so far only simulates the men's side of the meet and excludes relays and Skins events. Given a lineup, the function averages the points Stanford scores in a certain match over 1,000 iterations. To predict each swimmer's time, we take their most recent recorded time and add random noise with a standard deviation of 1\% of that time. The opposing swimmers are given the times they actually swam in that match, plus the same amount of noise. Our final pipeline is to have the policy step through the MDP and build the lineup while the simulator scores it. Our results were:
+
+\begin{table}[!h]
+\centering\small\vspace{-6pt}
+\begin{tabular}{lccc}
+\toprule
+Meet & Real result & Actual lineup (sim.) & Greedy (sim.) \\
+\midrule
+Match \#3  & 129.0 & 120.5 & 142.6 \\
+Match \#5  & 82.0  & 88.0  & 108.5 \\
+Wild Card  & 99.5  & 89.8  & 114.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Timeline and Next Steps}
+
+Over the next couple of weeks, we plan to make the simulation more accurate and to find a better policy using rollout planning. First, we will spend a week improving the time predictions and handling swimmers who don't have times in certain events. Then we will spend a week implementing a more realistic model and finding a more intelligent policy through rollouts or Monte Carlo tree search. We will also implement fatigue and other factors that can play a role in the final result. In the final week, we will evaluate all policies on each of Stanford's meets and write the final report.
+
+\section{AI Disclosure}
+
+Claude Code was used to help write code and Claude was used to help compile the results pdfs into csvs. However, the methods chosen were selected by us. The update was also written by us.
+
+\end{document}
